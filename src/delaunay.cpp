@@ -1,4 +1,4 @@
-#include "delaunay.h"
+#include "CDT/delaunay.h"
 #include <float.h>
 #include <iomanip>
 

@@ -4,14 +4,14 @@
 
 #include <iostream>
 #include <fstream>
-#include "delaunay.h"
-#include "inputPLC.h"
-#include "PLC.h"
+#include "CDT/delaunay.h"
+#include "CDT/inputPLC.h"
+#include "CDT/PLC.h"
 
 using namespace std;
 using namespace cdt;
 
-#include "logger.h"
+#include "CDT/logger.h"
 
 // createSteinerCDT
 // 
