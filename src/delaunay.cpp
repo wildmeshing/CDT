@@ -3,6 +3,7 @@
 #include <iomanip>
 
 using namespace std;
+namespace cdt {
 
 void TetMesh::init_vertices(const double* coords, uint32_t num_v) {
     vertices.reserve(num_v);
@@ -1656,4 +1657,5 @@ size_t TetMesh::iterativelySwapMesh(double th_energy) {
     }
 
     return swapped_edges + swapped_faces;
+}
 }

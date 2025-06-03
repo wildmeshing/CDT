@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 
+namespace cdt {
 
 // ------------------------- //
 // Fill cavity gift-wrapping //
@@ -819,4 +820,5 @@ void TetMesh::recoverFaceGiftWrap(std::vector<uint64_t>& i_tets, std::vector<int
     all_bnd_faces.insert(all_bnd_faces.end(), bottom_faces.begin(), bottom_faces.end());
 
     giftWrapping(face_vertices, top_vertices, bottom_vertices, all_bnd_faces, i_tets.size(), top_faces.size());
+}
 }

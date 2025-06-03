@@ -13,6 +13,7 @@
 
 #pragma intrinsic(fabs)
 
+namespace cdt {
 // NOTES: 1) "both_acute_ep" edges will be immediatelly split by inserting the middle point (each subedge becomes a "one_acute_ep")
 //        2) sub-edges of "no_acute_ep" and "one_acute_ep" inherit type
 //        3) "flat" edges will be ignored by segment recovery algorithm and will not be further classyfied
@@ -299,4 +300,5 @@ public:
   //}
 };
 
+}
 #endif // _PLC_

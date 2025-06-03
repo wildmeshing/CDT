@@ -34,6 +34,7 @@
 
 // Uncomment the following to activate overflow/underflow checks
 #define CHECK_FOR_XYZERFLOWS
+namespace cdt {
 
 inline int dotProductSign2D_filtered(double px, double py, double rx, double ry, double qx, double qy)
 {
@@ -10717,3 +10718,4 @@ inline int orient3d_indirect_IIII(const genericPoint& p1, const genericPoint& p2
    return orient3d_indirect_IIII_exact(p1, p2, p3, p4);
 }
 
+}

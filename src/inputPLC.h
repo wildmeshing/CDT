@@ -2,6 +2,7 @@
 #include <fstream>
 
 using namespace std;
+namespace cdt {
 
 class reVertex {
 public:
@@ -330,3 +331,4 @@ public:
             coordinates.push_back(idx[j] ? (bbmax[j%3]) : (bbmin[j%3]));
     }
 };
+}

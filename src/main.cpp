@@ -9,6 +9,7 @@
 #include "PLC.h"
 
 using namespace std;
+using namespace cdt;
 
 #include "logger.h"
 

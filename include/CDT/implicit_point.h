@@ -31,6 +31,8 @@
 #include "numerics.h"
 #include <iostream>
 
+namespace cdt {
+
 // An indirect predicate can assume one of the following values.
 // UNDEFINED means that input parameters are degenerate and do not define an
 // implicit point.
@@ -483,6 +485,8 @@ inline ostream& operator<<(ostream& os, const implicitPoint3D_LNC& p)
 	if (p.apapExplicit(e)) return os << e;
 	else return os << "UNDEF_LNC";
 }
+
+} // namespace cdt
 
 #include "hand_optimized_predicates.hpp"
 #include "implicit_point.hpp"

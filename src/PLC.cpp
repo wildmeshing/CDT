@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 
+namespace cdt {
 #ifdef USE_INDIRECT_PREDS
 double PLCx::getT1(uint32_t oe0i, uint32_t e0i) const {
     const std::vector<pointType*>& vs = delmesh.vertices;
@@ -27,7 +28,7 @@ inline implicitPoint_LNC* PLCx::getProjectionOrMidPoint(uint32_t oe0i, uint32_t 
     const vector3d e_oe0(vs[oe0i]);
     const vector3d e_oe1(vs[oe1i]);
 
-    double discr = sqrt(e_ref.dist_sq(e_oe0) / ((e_oe1.dist_sq(e_oe0))));
+    double discr = std::sqrt(e_ref.dist_sq(e_oe0) / ((e_oe1.dist_sq(e_oe0))));
     const double t1 = getT1(oe0i, e0i);
     const double t2 = getT2(oe1i, e1i);
     const double dv = (t2 - t1) * 0.2;
@@ -45,7 +46,7 @@ inline implicitPoint_LNC* PLCx::getProjectionOrMidPoint_noac(uint32_t oe0i, uint
     const vector3d e_oe0(vs[oe0i]);
     const vector3d e_oe1(vs[oe1i]);
 
-    double discr = sqrt(e_ref.dist_sq(e_e0) / ((e_oe1.dist_sq(e_oe0))));
+    double discr = std::sqrt(e_ref.dist_sq(e_e0) / ((e_oe1.dist_sq(e_oe0))));
     const double t1 = getT1(oe0i, e0i);
     const double t2 = getT2(oe1i, e1i);
     discr += t1;
@@ -63,7 +64,7 @@ inline implicitPoint_LNC* PLCx::getProjectionOrMidPoint_noac_rev(uint32_t oe0i, 
     const vector3d e_oe0(vs[oe0i]);
     const vector3d e_oe1(vs[oe1i]);
 
-    double discr = sqrt(e_ref.dist_sq(e_e1) / ((e_oe1.dist_sq(e_oe0))));
+    double discr = std::sqrt(e_ref.dist_sq(e_e1) / ((e_oe1.dist_sq(e_oe0))));
     const double t1 = getT1(oe0i, e0i);
     const double t2 = getT2(oe1i, e1i);
     discr = t2 - discr;
@@ -1778,4 +1779,5 @@ uint64_t PLCx::meshCavity(const std::vector<uint64_t>& bnd, const std::vector<ui
     }
 
     return UINT64_MAX;
+}
 }

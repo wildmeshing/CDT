@@ -20,6 +20,7 @@
 #define UNMARKBIT(m, twoPowBit) m &= (~((uint32_t)twoPowBit))
 #define ISMARKEDBIT(m, twoPowBit) m & ((uint32_t)twoPowBit) 
 
+namespace cdt {
 // Uncommenting the following macro definition makes the code use modified parts of hxt_SeqDel (Copyright (C) 2018 Célestin Marot).
 // hxt_SeqDel is a sequential Delaunay triangulator hosted at https://git.immc.ucl.ac.be/hextreme/hxt_seqdel as of 2020.
 // hxt_SeqDel is GPL licensed, meaning that if you uncomment the following line you accept the terms of the GPL license for
@@ -446,5 +447,6 @@ inline std::ostream& operator<<(std::ostream& os, const vector3d& p)
     return os << (p.c[0]) << " " << (p.c[1]) << " " << (p.c[2]);
 }
 
+}
 #endif // _DELAUNAY_
 

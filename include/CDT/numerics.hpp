@@ -37,6 +37,8 @@
 #include <cstring>
 #include <algorithm>
 
+namespace cdt {
+
 #pragma intrinsic(fabs)
 
 inline void initFPU()
@@ -1388,3 +1390,5 @@ inline std::string bigrational::get_str() const {
 }
 
 #endif // USE_GNU_GMP_CLASSES
+
+} // namespace cdt

@@ -1,15 +1,27 @@
 #ifndef NUMERIC_WRAPPER
 #define NUMERIC_WRAPPER
 
+
+#ifndef USE_INDIRECT_PREDS
+#include <assert.h>
+
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#endif
+
 #define USE_INDIRECT_PREDS
-//#define USE_DOUBLE
-//#define USE_LAZY_CORE
-//#define USE_PLAIN_CORE
-//#define USE_LAZY_GMPQ
-//#define USE_PLAIN_GMPQ
+// #define USE_DOUBLE
+// #define USE_LAZY_CORE
+// #define USE_PLAIN_CORE
+// #define USE_LAZY_GMPQ
+// #define USE_PLAIN_GMPQ
 
-#include "implicit_point.h"
+#include "CDT/implicit_point.h"
 
+namespace cdt {
 #ifdef USE_INDIRECT_PREDS
 typedef genericPoint pointType;
 typedef implicitPoint3D_LNC implicitPoint_LNC;
@@ -19,18 +31,18 @@ typedef explicitPoint3D explicitPoint;
 #ifdef USE_DOUBLE
 typedef double coord_t;
 #define GET_DOUBLE_VAL(a) (a)
-#define GET_SIGN(a) (((a)>0) - ((a)<0))
-#define GET_FABS(a) (((a)>0) ? (a) : (-a))
+#define GET_SIGN(a) (((a) > 0) - ((a) < 0))
+#define GET_FABS(a) (((a) > 0) ? (a) : (-a))
 #define GET_SQRT(a) (sqrt(a))
 #endif
 
 #ifdef USE_LAZY_CORE
-#include <CGAL/Lazy_exact_nt.h>
 #include <CGAL/CORE_Expr.h>
-typedef CGAL::Lazy_exact_nt< CORE::Expr> coord_t;
+#include <CGAL/Lazy_exact_nt.h>
+typedef CGAL::Lazy_exact_nt<CORE::Expr> coord_t;
 #define GET_DOUBLE_VAL(a) (a).approx().inf()
-#define GET_SIGN(a) (((a)>0) - ((a)<0))
-#define GET_FABS(a) (((a)>0) ? (a) : (-a))
+#define GET_SIGN(a) (((a) > 0) - ((a) < 0))
+#define GET_FABS(a) (((a) > 0) ? (a) : (-a))
 #define GET_SQRT(a) (sqrt(a))
 #endif
 
@@ -44,51 +56,43 @@ typedef CORE::Expr coord_t;
 #endif
 
 #ifdef USE_LAZY_GMPQ
-#include <CGAL/Lazy_exact_nt.h>
 #include <CGAL/Gmpq.h>
-typedef CGAL::Lazy_exact_nt< CGAL::Gmpq > coord_t;
+#include <CGAL/Lazy_exact_nt.h>
+typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> coord_t;
 #define GET_DOUBLE_VAL(a) (a).approx().inf()
-#define GET_SIGN(a) (((a)>0) - ((a)<0))
-#define GET_FABS(a) (((a)>0) ? (a) : (-a))
+#define GET_SIGN(a) (((a) > 0) - ((a) < 0))
+#define GET_FABS(a) (((a) > 0) ? (a) : (-a))
 #define GET_SQRT(a) (::sqrt(GET_DOUBLE_VAL(a)))
 #endif
-
 
 #ifdef USE_PLAIN_GMPQ
 #include <CGAL/Gmpxx.h>
 typedef mpq_class coord_t;
 #define GET_DOUBLE_VAL(a) (a).get_d()
-#define GET_SIGN(a) (((a)>0) - ((a)<0))
-#define GET_FABS(a) (((a)>0) ? (a) : (-a))
+#define GET_SIGN(a) (((a) > 0) - ((a) < 0))
+#define GET_FABS(a) (((a) > 0) ? (a) : (-a))
 #define GET_SQRT(a) (::sqrt(GET_DOUBLE_VAL(a)))
 #endif
 
 #ifndef USE_INDIRECT_PREDS
-
-#include <cstring>
-#include <assert.h>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
 
 extern void ip_error(const char* msg);
 
 #pragma intrinsic(fabs)
 
 #define INFINITE_VERTEX UINT32_MAX
-#define DT_UNKNOWN  0
-#define DT_OUT  1
-#define DT_IN  2
+#define DT_UNKNOWN 0
+#define DT_OUT 1
+#define DT_IN 2
 #define EXPECTED_VT_SIZE 128
 
 class pointType {
-public:
+   public:
     coord_t coords[3];
 
     pointType() {}
 
-    pointType(double a, double b, double c) : coords{ a, b, c } {}
+    pointType(double a, double b, double c) : coords{a, b, c} {}
 
     pointType(const pointType& a, const pointType& b, const coord_t& t) {
         for (int i = 0; i < 3; i++)
@@ -99,10 +103,14 @@ public:
     const coord_t& Y() const { return coords[1]; }
     const coord_t& Z() const { return coords[2]; }
 
-    bool isExplicit3D() const { return GET_DOUBLE_VAL(coords[0]) == coords[0] && GET_DOUBLE_VAL(coords[1]) == coords[1] && GET_DOUBLE_VAL(coords[2]) == coords[2]; }
+    bool isExplicit3D() const {
+        return GET_DOUBLE_VAL(coords[0]) == coords[0] &&
+               GET_DOUBLE_VAL(coords[1]) == coords[1] &&
+               GET_DOUBLE_VAL(coords[2]) == coords[2];
+    }
     pointType toExplicit3D() const { return *this; }
-    void apapExplicit(pointType& p) const { 
-        p.coords[0] = GET_DOUBLE_VAL(coords[0]); 
+    void apapExplicit(pointType& p) const {
+        p.coords[0] = GET_DOUBLE_VAL(coords[0]);
         p.coords[1] = GET_DOUBLE_VAL(coords[1]);
         p.coords[2] = GET_DOUBLE_VAL(coords[2]);
     }
@@ -111,26 +119,30 @@ public:
     const coord_t& operator[](int i) const { return coords[i]; }
 
     bool operator==(const pointType& p) const {
-        return coords[0] == p.coords[0] && coords[1] == p.coords[1] && coords[2] == p.coords[2]; 
+        return coords[0] == p.coords[0] && coords[1] == p.coords[1] &&
+               coords[2] == p.coords[2];
     }
 
-    void getApproxXYZCoordinates(double& x, double& y, double& z, bool apap=true) const {
+    void getApproxXYZCoordinates(double& x, double& y, double& z,
+                                 bool apap = true) const {
         x = GET_DOUBLE_VAL(coords[0]);
         y = GET_DOUBLE_VAL(coords[1]);
         z = GET_DOUBLE_VAL(coords[2]);
     }
 
-    static int dotProductSign3D(const pointType& a, const pointType& b, const pointType& c) {
-        coord_t ac[3] = { a.coords[0] - c.coords[0], a.coords[1] - c.coords[1], a.coords[2] - c.coords[2] };
-        coord_t bc[3] = { b.coords[0] - c.coords[0], b.coords[1] - c.coords[1], b.coords[2] - c.coords[2] };
+    static int dotProductSign3D(const pointType& a, const pointType& b,
+                                const pointType& c) {
+        coord_t ac[3] = {a.coords[0] - c.coords[0], a.coords[1] - c.coords[1],
+                         a.coords[2] - c.coords[2]};
+        coord_t bc[3] = {b.coords[0] - c.coords[0], b.coords[1] - c.coords[1],
+                         b.coords[2] - c.coords[2]};
         return GET_SIGN(ac[0] * bc[0] + ac[1] * bc[1] + ac[2] * bc[2]);
     }
 
     static int maxComponentInTriangleNormal(
         const coord_t& ov10, const coord_t& ov11, const coord_t& ov12,
         const coord_t& ov20, const coord_t& ov21, const coord_t& ov22,
-        const coord_t& ov30, const coord_t& ov31, const coord_t& ov32)
-    {
+        const coord_t& ov30, const coord_t& ov31, const coord_t& ov32) {
         const coord_t v3x = ov30 - ov20;
         const coord_t v3y = ov31 - ov21;
         const coord_t v3z = ov32 - ov22;
@@ -159,8 +171,9 @@ public:
         return 2;
     }
 
-    static int orient2D(const coord_t& p0, const coord_t& p1, const coord_t& q0, const coord_t& q1, const coord_t& r0, const coord_t& r1)
-    {
+    static int orient2D(const coord_t& p0, const coord_t& p1, const coord_t& q0,
+                        const coord_t& q1, const coord_t& r0,
+                        const coord_t& r1) {
 #ifdef USE_DOUBLE
         return orient2d(p0, p1, q0, q1, r0, r1);
 #else
@@ -172,51 +185,68 @@ public:
 #endif
     }
 
-    static int orient2Dxy(const pointType& p, const pointType& q, const pointType& r)
-    {
+    static int orient2Dxy(const pointType& p, const pointType& q,
+                          const pointType& r) {
         return orient2D(p[0], p[1], q[0], q[1], r[0], r[1]);
     }
 
-    static int orient2Dyz(const pointType& p, const pointType& q, const pointType& r)
-    {
+    static int orient2Dyz(const pointType& p, const pointType& q,
+                          const pointType& r) {
         return orient2D(p[1], p[2], q[1], q[2], r[1], r[2]);
     }
 
-    static int orient2Dzx(const pointType& p, const pointType& q, const pointType& r)
-    {
+    static int orient2Dzx(const pointType& p, const pointType& q,
+                          const pointType& r) {
         return orient2D(p[2], p[0], q[2], q[0], r[2], r[0]);
     }
 
-    static bool misaligned(const pointType& A, const pointType& B, const pointType& C) {
-        return (orient2Dxy(A, B, C) || orient2Dyz(A, B, C) || orient2Dzx(A, B, C));
+    static bool misaligned(const pointType& A, const pointType& B,
+                           const pointType& C) {
+        return (orient2Dxy(A, B, C) || orient2Dyz(A, B, C) ||
+                orient2Dzx(A, B, C));
     }
 
-    static int orient3D(const pointType& p, const pointType& q, const pointType& r, const pointType& s) {
+    static int orient3D(const pointType& p, const pointType& q,
+                        const pointType& r, const pointType& s) {
 #ifdef USE_DOUBLE
-        return orient3d(p.X(), p.Y(), p.Z(), q.X(), q.Y(), q.Z(), r.X(), r.Y(), r.Z(), s.X(), s.Y(), s.Z());
+        return orient3d(p.X(), p.Y(), p.Z(), q.X(), q.Y(), q.Z(), r.X(), r.Y(),
+                        r.Z(), s.X(), s.Y(), s.Z());
 #else
-        const coord_t fadx = q[0] - p[0], fbdx = r[0] - p[0], fcdx = s[0] - p[0];
-        const coord_t fady = q[1] - p[1], fbdy = r[1] - p[1], fcdy = s[1] - p[1];
-        const coord_t fadz = q[2] - p[2], fbdz = r[2] - p[2], fcdz = s[2] - p[2];
+        const coord_t fadx = q[0] - p[0], fbdx = r[0] - p[0],
+                      fcdx = s[0] - p[0];
+        const coord_t fady = q[1] - p[1], fbdy = r[1] - p[1],
+                      fcdy = s[1] - p[1];
+        const coord_t fadz = q[2] - p[2], fbdz = r[2] - p[2],
+                      fcdz = s[2] - p[2];
 
-        const coord_t fbdxcdy = fbdx * fcdy * fadz; const coord_t fcdxbdy = fcdx * fbdy * fadz;
-        const coord_t fcdxady = fcdx * fady * fbdz; const coord_t fadxcdy = fadx * fcdy * fbdz;
-        const coord_t fadxbdy = fadx * fbdy * fcdz; const coord_t fbdxady = fbdx * fady * fcdz;
+        const coord_t fbdxcdy = fbdx * fcdy * fadz;
+        const coord_t fcdxbdy = fcdx * fbdy * fadz;
+        const coord_t fcdxady = fcdx * fady * fbdz;
+        const coord_t fadxcdy = fadx * fcdy * fbdz;
+        const coord_t fadxbdy = fadx * fbdy * fcdz;
+        const coord_t fbdxady = fbdx * fady * fcdz;
 
-        const coord_t det = (fbdxcdy - fcdxbdy) + (fcdxady - fadxcdy) + (fadxbdy - fbdxady);
+        const coord_t det =
+            (fbdxcdy - fcdxbdy) + (fcdxady - fadxcdy) + (fadxbdy - fbdxady);
 
         return (det < 0) - (det > 0);
 #endif
     }
 
-    static int inSphere(const pointType& pa, const pointType& pb, const pointType& pc, const pointType& pd, const pointType& pe)
-    {
+    static int inSphere(const pointType& pa, const pointType& pb,
+                        const pointType& pc, const pointType& pd,
+                        const pointType& pe) {
 #ifdef USE_DOUBLE
-        return ::inSphere(pa.X(), pa.Y(), pa.Z(), pb.X(), pb.Y(), pb.Z(), pc.X(), pc.Y(), pc.Z(), pd.X(), pd.Y(), pd.Z(), pe.X(), pe.Y(), pe.Z());
+        return cdt::inSphere(pa.X(), pa.Y(), pa.Z(), pb.X(), pb.Y(), pb.Z(),
+                          pc.X(), pc.Y(), pc.Z(), pd.X(), pd.Y(), pd.Z(),
+                          pe.X(), pe.Y(), pe.Z());
 #else
-        const coord_t aex = pa[0] - pe[0], bex = pb[0] - pe[0], cex = pc[0] - pe[0], dex = pd[0] - pe[0];
-        const coord_t aey = pa[1] - pe[1], bey = pb[1] - pe[1], cey = pc[1] - pe[1], dey = pd[1] - pe[1];
-        const coord_t aez = pa[2] - pe[2], bez = pb[2] - pe[2], cez = pc[2] - pe[2], dez = pd[2] - pe[2];
+        const coord_t aex = pa[0] - pe[0], bex = pb[0] - pe[0],
+                      cex = pc[0] - pe[0], dex = pd[0] - pe[0];
+        const coord_t aey = pa[1] - pe[1], bey = pb[1] - pe[1],
+                      cey = pc[1] - pe[1], dey = pd[1] - pe[1];
+        const coord_t aez = pa[2] - pe[2], bez = pb[2] - pe[2],
+                      cez = pc[2] - pe[2], dez = pd[2] - pe[2];
 
         const coord_t aexbey = aex * bey;
         const coord_t bexaey = bex * aey;
@@ -288,8 +318,9 @@ public:
 #endif
     }
 
-    static bool lineCrossesTriangle(const pointType& s1, const pointType& s2, const pointType& v1, const pointType& v2, const pointType& v3)
-    {
+    static bool lineCrossesTriangle(const pointType& s1, const pointType& s2,
+                                    const pointType& v1, const pointType& v2,
+                                    const pointType& v3) {
         const int o1 = orient3D(s1, s2, v1, v2);
         const int o2 = orient3D(s1, s2, v2, v3);
         if ((o1 > 0 && o2 < 0) || (o1 < 0 && o2 > 0)) return false;
@@ -299,26 +330,22 @@ public:
         return true;
     }
 
-    static bool innerSegmentsCross(const pointType& A, const pointType& B, const pointType& P, const pointType& Q, int xyz)
-    {
+    static bool innerSegmentsCross(const pointType& A, const pointType& B,
+                                   const pointType& P, const pointType& Q,
+                                   int xyz) {
         int o11, o12, o21, o22;
 
-        if (xyz == 2)
-        {
+        if (xyz == 2) {
             o11 = orient2Dxy(P, A, B);
             o12 = orient2Dxy(Q, B, A);
             o21 = orient2Dxy(A, P, Q);
             o22 = orient2Dxy(B, Q, P);
-        }
-        else if (xyz == 0)
-        {
+        } else if (xyz == 0) {
             o11 = orient2Dyz(P, A, B);
             o12 = orient2Dyz(Q, B, A);
             o21 = orient2Dyz(A, P, Q);
             o22 = orient2Dyz(B, Q, P);
-        }
-        else
-        {
+        } else {
             o11 = orient2Dzx(P, A, B);
             o12 = orient2Dzx(Q, B, A);
             o21 = orient2Dzx(A, P, Q);
@@ -328,8 +355,8 @@ public:
         return (o11 && o21 && o11 == o12 && o21 == o22);
     }
 
-    static bool pointInInnerSegment(const pointType& p, const pointType& v1, const pointType& v2)
-    {
+    static bool pointInInnerSegment(const pointType& p, const pointType& v1,
+                                    const pointType& v2) {
         if (misaligned(p, v1, v2)) return false;
 
         int lt2, lt3;
@@ -345,8 +372,10 @@ public:
         return false;
     }
 
-    static inline bool innerSegmentsCross(const pointType& A, const pointType& B, const pointType& P, const pointType& Q)
-    {
+    static inline bool innerSegmentsCross(const pointType& A,
+                                          const pointType& B,
+                                          const pointType& P,
+                                          const pointType& Q) {
         int o11, o12, o21, o22;
 
         o11 = orient2Dxy(P, A, B);
@@ -370,8 +399,11 @@ public:
         return false;
     }
 
-    static inline bool lineCrossesInnerTriangle(const pointType& s1, const pointType& s2, const pointType& v1, const pointType& v2, const pointType& v3)
-    {
+    static inline bool lineCrossesInnerTriangle(const pointType& s1,
+                                                const pointType& s2,
+                                                const pointType& v1,
+                                                const pointType& v2,
+                                                const pointType& v3) {
         const int o1 = pointType::orient3D(s1, s2, v1, v2);
         const int o2 = pointType::orient3D(s1, s2, v2, v3);
         if ((o1 >= 0 && o2 <= 0) || (o1 <= 0 && o2 >= 0)) return false;
@@ -381,10 +413,15 @@ public:
         return true;
     }
 
-    static inline bool innerSegmentCrossesInnerTriangle(const pointType& s1, const pointType& s2, const pointType& v1, const pointType& v2, const pointType& v3)
-    {
-        int o1 = orient3D(s1, v1, v2, v3); if (o1 == 0) return false;
-        int o2 = orient3D(s2, v1, v2, v3); if (o2 == 0) return false;
+    static inline bool innerSegmentCrossesInnerTriangle(const pointType& s1,
+                                                        const pointType& s2,
+                                                        const pointType& v1,
+                                                        const pointType& v2,
+                                                        const pointType& v3) {
+        int o1 = orient3D(s1, v1, v2, v3);
+        if (o1 == 0) return false;
+        int o2 = orient3D(s2, v1, v2, v3);
+        if (o2 == 0) return false;
 
         if ((o1 > 0 && o2 > 0) || (o1 < 0 && o2 < 0)) return false;
         o1 = orient3D(s1, s2, v1, v2);
@@ -396,33 +433,38 @@ public:
         return true;
     }
 
-    static inline bool pointInInnerTriangle(const pointType& P, const pointType& A, const pointType& B, const pointType& C)
-    {
+    static inline bool pointInInnerTriangle(const pointType& P,
+                                            const pointType& A,
+                                            const pointType& B,
+                                            const pointType& C) {
         int o1, o2, o3;
         o1 = orient2Dxy(P, A, B);
         o2 = orient2Dxy(P, B, C);
         o3 = orient2Dxy(P, C, A);
-        if (o1 || o2 || o3) return ((o1 > 0 && o2 > 0 && o3 > 0) || (o1 < 0 && o2 < 0 && o3 < 0));
+        if (o1 || o2 || o3)
+            return ((o1 > 0 && o2 > 0 && o3 > 0) ||
+                    (o1 < 0 && o2 < 0 && o3 < 0));
         o1 = orient2Dyz(P, A, B);
         o2 = orient2Dyz(P, B, C);
         o3 = orient2Dyz(P, C, A);
-        if (o1 || o2 || o3) return ((o1 > 0 && o2 > 0 && o3 > 0) || (o1 < 0 && o2 < 0 && o3 < 0));
+        if (o1 || o2 || o3)
+            return ((o1 > 0 && o2 > 0 && o3 > 0) ||
+                    (o1 < 0 && o2 < 0 && o3 < 0));
         o1 = orient2Dzx(P, A, B);
         o2 = orient2Dzx(P, B, C);
         o3 = orient2Dzx(P, C, A);
         return ((o1 > 0 && o2 > 0 && o3 > 0) || (o1 < 0 && o2 < 0 && o3 < 0));
     }
-
 };
 
 typedef pointType explicitPoint;
 typedef pointType implicitPoint_LNC;
 
-inline std::ostream& operator<<(std::ostream& os, const pointType& p)
-{
-    return os << GET_DOUBLE_VAL(p[0]) << " " << GET_DOUBLE_VAL(p[1]) << " " << GET_DOUBLE_VAL(p[2]);
+inline std::ostream& operator<<(std::ostream& os, const pointType& p) {
+    return os << GET_DOUBLE_VAL(p[0]) << " " << GET_DOUBLE_VAL(p[1]) << " "
+              << GET_DOUBLE_VAL(p[2]);
 }
+#endif  // USE_INDIRECT_PREDS
 
-#endif // USE_INDIRECT_PREDS
-
+}
 #endif

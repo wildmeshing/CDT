@@ -1,5 +1,13 @@
 #include <chrono>
+#if _MSC_VER
+#include <windows.h>
+#include <psapi.h>
+#else
+#include <sys/time.h>
+#include <sys/resource.h>
+#endif
 
+namespace cdt {
 FILE* log_fp;
 std::chrono::steady_clock::time_point time_point;
 
@@ -52,8 +60,6 @@ inline void finishLogging() {
 }
 
 #ifdef _MSC_VER
-#include <windows.h>
-#include <psapi.h>
 
 // To ensure correct resolution of symbols, add Psapi.lib to TARGETLIBS
 // and compile with -DPSAPI_VERSION=1
@@ -81,12 +87,10 @@ inline void logMemInfo()
 }
 #else
 
-#include <sys/time.h>
-#include <sys/resource.h>
-
 inline void logMemInfo() {
     struct rusage r_usage;
     getrusage(RUSAGE_SELF, &r_usage);
     fprintf(log_fp, ", %.2f", r_usage.ru_maxrss / 1000.0);
 }
 #endif
+}

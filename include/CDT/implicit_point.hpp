@@ -27,6 +27,7 @@
 
 #include "implicit_point.h"
 #include "indirect_predicates.h"
+namespace cdt {
 
 int orient2d(double p1x, double p1y, double p2x, double p2y, double p3x, double p3y);
 int orient3d(double px, double py, double pz, double qx, double qy, double qz, double rx, double ry, double rz, double sx, double sy, double sz);
@@ -347,7 +348,7 @@ inline int genericPoint::inSphere(const genericPoint& a, const genericPoint& b, 
 {
 	const int num_explicit = a.isExplicit3D() + b.isExplicit3D() + c.isExplicit3D() + d.isExplicit3D() + e.isExplicit3D();
 
-	if (num_explicit == 5) return ::inSphere(a.toExplicit3D().X(), a.toExplicit3D().Y(), a.toExplicit3D().Z(),
+	if (num_explicit == 5) return cdt::inSphere(a.toExplicit3D().X(), a.toExplicit3D().Y(), a.toExplicit3D().Z(),
 		b.toExplicit3D().X(), b.toExplicit3D().Y(), b.toExplicit3D().Z(),
 		c.toExplicit3D().X(), c.toExplicit3D().Y(), c.toExplicit3D().Z(),
 		d.toExplicit3D().X(), d.toExplicit3D().Y(), d.toExplicit3D().Z(),
@@ -1388,4 +1389,5 @@ inline bool genericPoint::segmentsCross(const genericPoint& A, const genericPoin
 	}
 
 	return ((o11 || o12) && (o11 * o12 >= 0) && (o21 || o22) && (o21 * o22 >= 0));
+}
 }
